@@ -1,44 +1,64 @@
-// DOMutils.js
-export const DOMUtils = {
+// DOMUtils.js
+export class DOMUtils {
     /**
-     * Creates a DOM element with optional attributes and text content.
-     * @param {string} tag - The tag name for the element.
-     * @param {Object} [options] - Optional configurations for the element.
+     * Create a DOM element with optional attributes, classes, and inner text.
+     * @param {string} tag - The tag name of the element (e.g., 'div', 'span').
+     * @param {Object} options - Options for the element.
+     * @param {string} [options.text] - Inner text of the element.
+     * @param {string} [options.className] - Class name(s) to apply.
+     * @param {Object} [options.attributes] - Attributes to set (e.g., { id: "myId" }).
      * @returns {HTMLElement} - The created DOM element.
      */
-    createElement(tag, { text, html, className, attributes } = {}) {
+    static createElement(tag, options = {}) {
         const element = document.createElement(tag);
-        if (className) element.className = className;
-        if (text) element.textContent = text;
-        if (html) element.innerHTML = html;
-        if (attributes) {
-            for (const [key, value] of Object.entries(attributes)) {
-                element.setAttribute(key, value);
-            }
+
+        if (options.text) {
+            element.textContent = options.text;
         }
+
+        if (options.className) {
+            element.className = options.className;
+        }
+
+        if (options.attributes) {
+            Object.keys(options.attributes).forEach((key) => {
+                element.setAttribute(key, options.attributes[key]);
+            });
+        }
+
         return element;
-    },
+    }
 
     /**
-     * Removes all children from a given element.
-     * @param {HTMLElement} element - The target element.
+     * Remove all child nodes from a parent element.
+     * @param {HTMLElement} element - The parent element.
      */
-    removeAllChildren(element) {
+    static removeAllChildren(element) {
         while (element.firstChild) {
             element.removeChild(element.firstChild);
         }
-    },
+    }
 
     /**
-     * Toggles a CSS class on an element.
-     * @param {HTMLElement} element - The target element.
-     * @param {string} className - The class name to toggle.
+     * Append multiple children to a parent element.
+     * @param {HTMLElement} parent - The parent element.
+     * @param {HTMLElement[]} children - Array of child elements to append.
      */
-    toggleClass(element, className) {
-        if (element.classList.contains(className)) {
+    static appendChildren(parent, children) {
+        children.forEach((child) => parent.appendChild(child));
+    }
+
+    /**
+     * Show or hide an element by toggling a class.
+     * @param {HTMLElement} element - The element to show or hide.
+     * @param {boolean} isVisible - Whether to show the element.
+     * @param {string} [className='hidden'] - The class to toggle for hiding.
+     */
+    static toggleVisibility(element, isVisible, className = 'hidden') {
+        if (isVisible) {
             element.classList.remove(className);
         } else {
             element.classList.add(className);
         }
-    },
-};
+    }
+}

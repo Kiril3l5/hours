@@ -1,17 +1,26 @@
 // TimeTrackingCalendar.js
-import { getFirestore, collection, query, where, getDocs, addDoc, doc, serverTimestamp, setDoc, writeBatch } from "firebase/firestore";
-import { DateUtils } from "../../shared/utils/DateUtils";
+import { db } from "../firebase.js";
+import { DateUtils } from "../../../shared/utils/DateUtils.js";
+import {
+    collection,
+    query,
+    where,
+    getDocs,
+    addDoc,
+    doc,
+    serverTimestamp,
+    writeBatch,
+} from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 
 export class TimeTrackingCalendar {
-    constructor(userId, db) {
-        if (!userId || !db) {
-            console.error("Constructor Error: Invalid userId or Firestore instance.");
-            throw new Error("TimeTrackingCalendar requires a valid userId and Firestore database instance.");
+    constructor(userId) {
+        if (!userId) {
+            console.error("Constructor Error: Invalid userId.");
+            throw new Error("TimeTrackingCalendar requires a valid userId.");
         }
 
         console.log("Initializing TimeTrackingCalendar for user:", userId);
         this.userId = userId;
-        this.db = db;
         this.timeEntries = new Map();
         this.submittedWeeks = new Set();
         this.isOnline = navigator.onLine;
@@ -87,13 +96,12 @@ export class TimeTrackingCalendar {
 
         console.log("Fetching submitted entries from Firestore...");
         try {
-            const q = query(collection(this.db, "timeEntries"), where("userId", "==", this.userId));
+            const q = query(collection(db, "timeEntries"), where("userId", "==", this.userId));
             const querySnapshot = await getDocs(q);
 
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                const weekNumber = parseInt(data.week.split("-W")[1]);
-                this.submittedWeeks.add(weekNumber);
+                this.submittedWeeks.add(data.week);
 
                 data.hours.forEach((hourEntry) => {
                     if (hourEntry.hours > 0 || hourEntry.isTimeOff) {
@@ -179,7 +187,7 @@ export class TimeTrackingCalendar {
                 createdAt: serverTimestamp(),
             };
 
-            const docRef = await addDoc(collection(this.db, "timeEntries"), entry);
+            const docRef = await addDoc(collection(db, "timeEntries"), entry);
             console.log("Time entry added successfully to Firestore with ID:", docRef.id);
             this.timeEntries.set(entry.date, { ...entry, id: docRef.id });
             this.updateCalendarEntry(entry.date, hours);
@@ -213,8 +221,8 @@ export class TimeTrackingCalendar {
         }
 
         try {
-            const batch = writeBatch(this.db);
-            const timeEntriesRef = collection(this.db, "timeEntries");
+            const batch = writeBatch(db);
+            const timeEntriesRef = collection(db, "timeEntries");
             this.timeEntries.forEach((entry) => {
                 const docRef = doc(timeEntriesRef, `${this.userId}_${entry.date}`);
                 batch.set(docRef, { ...entry, syncedAt: serverTimestamp() });

@@ -1,30 +1,27 @@
 // AuthManager.js
-import { initializeApp } from "firebase/app";
+import { auth, db } from "../firebase.js";
 import {
-    getAuth,
     onAuthStateChanged,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     setPersistence,
     browserLocalPersistence,
     signOut,
-} from "firebase/auth";
+} from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
 import {
-    getFirestore,
     doc,
     setDoc,
     serverTimestamp,
     collection,
-} from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 
 export class AuthManager {
-    constructor(firebaseConfig) {
+    constructor() {
         try {
-            this.firebaseConfig = firebaseConfig;
-            this.initializeFirebase();
             this.verifyRequiredElements();
             this.initializeState();
             this.bindEvents();
+            this.setupAuthPersistence();
         } catch (error) {
             console.error("Error initializing AuthManager:", error);
             this.showError("Failed to initialize application");
@@ -32,14 +29,10 @@ export class AuthManager {
         }
     }
 
-    initializeFirebase() {
-        const app = initializeApp(this.firebaseConfig);
-        this.auth = getAuth(app);
-        this.db = getFirestore(app);
-
-        setPersistence(this.auth, browserLocalPersistence)
+    setupAuthPersistence() {
+        setPersistence(auth, browserLocalPersistence)
             .then(() => {
-                onAuthStateChanged(this.auth, (user) => this.handleAuthStateChange(user));
+                onAuthStateChanged(auth, (user) => this.handleAuthStateChange(user));
             })
             .catch((error) => {
                 console.error("Error setting persistence:", error);
@@ -133,7 +126,7 @@ export class AuthManager {
         this.setLoading(true);
 
         try {
-            await signInWithEmailAndPassword(this.auth, email, password);
+            await signInWithEmailAndPassword(auth, email, password);
             this.clearError();
         } catch (error) {
             console.error("Login failed:", error);
@@ -153,8 +146,8 @@ export class AuthManager {
         this.setLoading(true);
 
         try {
-            const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-            const userDoc = doc(collection(this.db, "users"), userCredential.user.uid);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const userDoc = doc(collection(db, "users"), userCredential.user.uid);
 
             await setDoc(userDoc, {
                 firstName,
@@ -175,7 +168,7 @@ export class AuthManager {
 
     async handleLogout() {
         try {
-            await signOut(this.auth);
+            await signOut(auth);
         } catch (error) {
             console.error("Logout error:", error);
             this.showError("Error logging out. Please try again.");

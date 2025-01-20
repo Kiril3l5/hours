@@ -1,4 +1,7 @@
 // TimeEntryModal.js
+import { DateUtils } from "../../../shared/utils/DateUtils.js";
+import { DOMUtils } from "../../../shared/utils/DOMUtils.js";
+
 export class TimeEntryModal {
     constructor(onSaveCallback) {
         if (typeof onSaveCallback !== "function") {
@@ -24,7 +27,7 @@ export class TimeEntryModal {
         this.modal = document.getElementById("timeEntryModal");
         if (!this.modal) throw new Error("Modal element not found.");
 
-        this.dateDisplay = document.getElementById("modalDate");
+        this.dateDisplay = DOMUtils.createElement("span");
         this.timeOffCheck = document.getElementById("timeOffCheck");
         this.managerApprovalCheck = document.getElementById("managerApprovedCheck");
         this.hoursInput = document.getElementById("hoursInput");
@@ -34,9 +37,10 @@ export class TimeEntryModal {
         this.saveButton = document.getElementById("saveEntry");
         this.closeButton = document.getElementById("closeModal");
 
-        this.loadingOverlay = document.createElement("div");
-        this.loadingOverlay.className = "modal-loading-overlay";
-        this.loadingOverlay.innerHTML = '<div class="spinner"></div>';
+        this.loadingOverlay = DOMUtils.createElement("div", {
+            className: "modal-loading-overlay",
+            text: '<div class="spinner"></div>',
+        });
         this.loadingOverlay.style.display = "none";
         this.modal.appendChild(this.loadingOverlay);
     }
@@ -122,7 +126,7 @@ export class TimeEntryModal {
     }
 
     updateModalContent() {
-        this.dateDisplay.textContent = this.formatDate(this.state.selectedDate);
+        this.dateDisplay.textContent = DateUtils.formatDate(this.state.selectedDate);
 
         const entry = this.state.currentEntry;
         this.timeOffCheck.checked = entry?.isTimeOff || false;
@@ -152,10 +156,10 @@ export class TimeEntryModal {
         const isTimeOff = this.timeOffCheck.checked;
         const hours = Number(this.hoursInput.value);
 
-        document.getElementById("timeOffApproval").style.display = isTimeOff ? "block" : "none";
-        document.getElementById("hoursSection").style.display = isTimeOff ? "none" : "block";
-        document.getElementById("overtimeApproval").style.display = hours > 8 ? "block" : "none";
-        document.getElementById("shortDayApproval").style.display = hours < 8 ? "block" : "none";
+        DOMUtils.toggleVisibility(document.getElementById("timeOffApproval"), isTimeOff);
+        DOMUtils.toggleVisibility(document.getElementById("hoursSection"), !isTimeOff);
+        DOMUtils.toggleVisibility(document.getElementById("overtimeApproval"), hours > 8);
+        DOMUtils.toggleVisibility(document.getElementById("shortDayApproval"), hours < 8);
     }
 
     async handleSave() {
@@ -200,9 +204,10 @@ export class TimeEntryModal {
     }
 
     showError(message) {
-        const errorEl = document.createElement("div");
-        errorEl.className = "modal-error";
-        errorEl.textContent = message;
+        const errorEl = DOMUtils.createElement("div", {
+            className: "modal-error",
+            text: message,
+        });
 
         const existingError = this.modal.querySelector(".modal-error");
         if (existingError) existingError.remove();
@@ -218,14 +223,5 @@ export class TimeEntryModal {
             this.hoursInput.focus();
             this.hoursInput.select();
         }
-    }
-
-    formatDate(date) {
-        return date.toLocaleDateString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        });
     }
 }
