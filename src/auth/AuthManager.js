@@ -1,5 +1,5 @@
 // AuthManager.js
-import { auth, db } from "../firebase.js";
+import { auth, db } from "../../../shared/firebase.js";
 import {
     onAuthStateChanged,
     signInWithEmailAndPassword,

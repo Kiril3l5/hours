@@ -1,5 +1,5 @@
 // TimeTrackingCalendar.js
-import { db } from "../firebase.js";
+import { db } from "../../../shared/firebase.js";
 import { DateUtils } from "../../../shared/utils/DateUtils.js";
 import {
     collection,
