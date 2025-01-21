@@ -1,11 +1,10 @@
 // TimeEntryModal.js
-import { DateUtils } from "../../../shared/utils/DateUtils.js";
-import { DOMUtils } from "../../../shared/utils/DOMUtils.js";
+import { DateUtils } from '../../../shared/utils/DateUtils.js';
 
 export class TimeEntryModal {
     constructor(onSaveCallback) {
-        if (typeof onSaveCallback !== "function") {
-            throw new Error("TimeEntryModal requires a valid onSave callback function.");
+        if (typeof onSaveCallback !== 'function') {
+            throw new Error('TimeEntryModal requires a valid onSave callback function');
         }
 
         this.onSave = onSaveCallback;
@@ -14,81 +13,127 @@ export class TimeEntryModal {
             isLoading: false,
             selectedDate: null,
             currentEntry: null,
-            hasUnsavedChanges: false,
+            hasUnsavedChanges: false
         };
 
+        this.createModal();
+        this.setupEventListeners();
+    }
+
+    createModal() {
+        this.modal = document.createElement('div');
+        this.modal.className = 'time-entry-modal';
+        this.modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Time Entry</h2>
+                    <button class="close-button" aria-label="Close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="timeEntryForm">
+                        <div class="form-group">
+                            <label for="entryDate">Date</label>
+                            <input type="date" id="entryDate" disabled>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="timeOffCheck">
+                                Time Off
+                            </label>
+                        </div>
+
+                        <div class="form-group" id="hoursGroup">
+                            <label for="hoursInput">Hours</label>
+                            <input type="number" id="hoursInput" min="0" max="24" step="0.5">
+                        </div>
+
+                        <div class="form-group" id="timeOffGroup" style="display: none;">
+                            <label>
+                                <input type="checkbox" id="managerApprovedCheck">
+                                Manager Approved
+                            </label>
+                        </div>
+
+                        <div class="form-group" id="overtimeGroup" style="display: none;">
+                            <label>
+                                <input type="checkbox" id="overtimeApprovedCheck">
+                                Overtime Approved
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notesInput">Notes</label>
+                            <textarea id="notesInput" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-action="cancel">Cancel</button>
+                    <button type="button" class="btn-primary" data-action="save">Save</button>
+                </div>
+                <div class="loading-overlay" style="display: none;">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(this.modal);
         this.initializeElements();
-        this.setupValidationRules();
-        this.bindEventHandlers();
-        this.setupKeyboardNavigation();
     }
 
     initializeElements() {
-        this.modal = document.getElementById("timeEntryModal");
-        if (!this.modal) throw new Error("Modal element not found.");
-
-        this.dateDisplay = DOMUtils.createElement("span");
-        this.timeOffCheck = document.getElementById("timeOffCheck");
-        this.managerApprovalCheck = document.getElementById("managerApprovedCheck");
-        this.hoursInput = document.getElementById("hoursInput");
-        this.overtimeApprovalCheck = document.getElementById("overtimeApprovedCheck");
-        this.shortDayApprovalCheck = document.getElementById("shortDayApprovedCheck");
-
-        this.saveButton = document.getElementById("saveEntry");
-        this.closeButton = document.getElementById("closeModal");
-
-        this.loadingOverlay = DOMUtils.createElement("div", {
-            className: "modal-loading-overlay",
-            text: '<div class="spinner"></div>',
-        });
-        this.loadingOverlay.style.display = "none";
-        this.modal.appendChild(this.loadingOverlay);
-    }
-
-    setupValidationRules() {
-        this.validationRules = {
-            hours: {
-                validate: (value) => {
-                    const hours = Number(value);
-                    return !isNaN(hours) && hours >= 0 && hours <= 24;
-                },
-                message: "Please enter valid hours (0 to 24).",
-            },
+        this.elements = {
+            form: this.modal.querySelector('#timeEntryForm'),
+            dateInput: this.modal.querySelector('#entryDate'),
+            timeOffCheck: this.modal.querySelector('#timeOffCheck'),
+            hoursInput: this.modal.querySelector('#hoursInput'),
+            hoursGroup: this.modal.querySelector('#hoursGroup'),
+            timeOffGroup: this.modal.querySelector('#timeOffGroup'),
+            overtimeGroup: this.modal.querySelector('#overtimeGroup'),
+            managerApprovedCheck: this.modal.querySelector('#managerApprovedCheck'),
+            overtimeApprovedCheck: this.modal.querySelector('#overtimeApprovedCheck'),
+            notesInput: this.modal.querySelector('#notesInput'),
+            loadingOverlay: this.modal.querySelector('.loading-overlay'),
+            saveButton: this.modal.querySelector('[data-action="save"]'),
+            cancelButton: this.modal.querySelector('[data-action="cancel"]'),
+            closeButton: this.modal.querySelector('.close-button')
         };
     }
 
-    bindEventHandlers() {
-        this.timeOffCheck.addEventListener("change", () => this.handleTimeOffToggle());
-        this.hoursInput.addEventListener("input", () => this.handleHoursInputChange());
-        this.hoursInput.addEventListener("blur", () => this.validateInput("hours"));
-        this.saveButton.addEventListener("click", () => this.handleSave());
-        this.closeButton.addEventListener("click", () => this.close());
-
-        this.modal.querySelectorAll("input").forEach((input) => {
-            input.addEventListener("change", () => {
-                this.state.hasUnsavedChanges = true;
-            });
+    setupEventListeners() {
+        this.elements.timeOffCheck.addEventListener('change', () => this.handleTimeOffToggle());
+        this.elements.hoursInput.addEventListener('input', () => this.handleHoursInput());
+        this.elements.saveButton.addEventListener('click', () => this.handleSave());
+        this.elements.cancelButton.addEventListener('click', () => this.close());
+        this.elements.closeButton.addEventListener('click', () => this.close());
+        
+        this.elements.form.addEventListener('change', () => {
+            this.state.hasUnsavedChanges = true;
         });
-    }
 
-    setupKeyboardNavigation() {
-        document.addEventListener("keydown", (event) => {
-            if (!this.state.isOpen) return;
+        document.addEventListener('keydown', (e) => {
+            if (this.state.isOpen) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    this.close();
+                } else if (e.key === 'Enter' && e.ctrlKey) {
+                    e.preventDefault();
+                    this.handleSave();
+                }
+            }
+        });
 
-            if (event.key === "Escape") {
-                event.preventDefault();
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
                 this.close();
-            } else if (event.key === "Enter" && event.ctrlKey) {
-                event.preventDefault();
-                this.handleSave();
             }
         });
     }
 
     open(date, currentEntry = null) {
-        if (!date || isNaN(date.getTime())) {
-            console.error("Invalid date passed to modal:", date);
-            return;
+        if (!date || !(date instanceof Date)) {
+            throw new Error('Invalid date provided to modal');
         }
 
         this.state.selectedDate = date;
@@ -96,132 +141,120 @@ export class TimeEntryModal {
         this.state.hasUnsavedChanges = false;
         this.state.isOpen = true;
 
-        this.updateModalContent();
-        this.modal.style.display = "flex";
-        requestAnimationFrame(() => {
-            this.modal.classList.add("modal-visible");
-        });
+        this.elements.dateInput.value = DateUtils.formatDate(date);
+        this.populateForm(currentEntry);
+        
+        this.modal.classList.add('active');
+        this.elements.hoursInput.focus();
     }
 
     close() {
-        if (this.state.hasUnsavedChanges && !confirm("You have unsaved changes. Discard them?")) {
-            return;
+        if (this.state.hasUnsavedChanges) {
+            const proceed = confirm('You have unsaved changes. Are you sure you want to close?');
+            if (!proceed) return;
         }
 
-        this.modal.classList.remove("modal-visible");
-        setTimeout(() => {
-            this.modal.style.display = "none";
-            this.resetState();
-        }, 300);
+        this.modal.classList.remove('active');
+        this.resetForm();
+        this.state.isOpen = false;
     }
 
-    resetState() {
-        this.state = {
-            isOpen: false,
-            isLoading: false,
-            selectedDate: null,
-            currentEntry: null,
-            hasUnsavedChanges: false,
-        };
+    populateForm(entry) {
+        if (entry) {
+            this.elements.timeOffCheck.checked = entry.isTimeOff || false;
+            this.elements.hoursInput.value = entry.hours || '';
+            this.elements.managerApprovedCheck.checked = entry.managerApproved || false;
+            this.elements.overtimeApprovedCheck.checked = entry.overtimeApproved || false;
+            this.elements.notesInput.value = entry.notes || '';
+        } else {
+            this.resetForm();
+        }
+
+        this.updateVisibility();
     }
 
-    updateModalContent() {
-        this.dateDisplay.textContent = DateUtils.formatDate(this.state.selectedDate);
-
-        const entry = this.state.currentEntry;
-        this.timeOffCheck.checked = entry?.isTimeOff || false;
-        this.managerApprovalCheck.checked = entry?.managerApproved || false;
-        this.hoursInput.value = entry?.hours ?? 8;
-        this.overtimeApprovalCheck.checked = entry?.overtimeApproved || false;
-        this.shortDayApprovalCheck.checked = entry?.shortDayApproved || false;
-
-        this.updateSectionVisibility();
-        this.setInitialFocus();
+    resetForm() {
+        this.elements.form.reset();
+        this.elements.hoursInput.value = '8';
+        this.updateVisibility();
     }
 
     handleTimeOffToggle() {
-        const isTimeOff = this.timeOffCheck.checked;
-        this.hoursInput.value = isTimeOff ? 0 : 8;
-        this.updateSectionVisibility();
+        this.updateVisibility();
         this.state.hasUnsavedChanges = true;
     }
 
-    handleHoursInputChange() {
-        this.validateInput("hours");
-        this.updateSectionVisibility();
+    handleHoursInput() {
+        const hours = parseFloat(this.elements.hoursInput.value);
+        this.elements.overtimeGroup.style.display = hours > 8 ? 'block' : 'none';
         this.state.hasUnsavedChanges = true;
     }
 
-    updateSectionVisibility() {
-        const isTimeOff = this.timeOffCheck.checked;
-        const hours = Number(this.hoursInput.value);
-
-        DOMUtils.toggleVisibility(document.getElementById("timeOffApproval"), isTimeOff);
-        DOMUtils.toggleVisibility(document.getElementById("hoursSection"), !isTimeOff);
-        DOMUtils.toggleVisibility(document.getElementById("overtimeApproval"), hours > 8);
-        DOMUtils.toggleVisibility(document.getElementById("shortDayApproval"), hours < 8);
+    updateVisibility() {
+        const isTimeOff = this.elements.timeOffCheck.checked;
+        this.elements.hoursGroup.style.display = isTimeOff ? 'none' : 'block';
+        this.elements.timeOffGroup.style.display = isTimeOff ? 'block' : 'none';
+        this.elements.overtimeGroup.style.display = 
+            !isTimeOff && parseFloat(this.elements.hoursInput.value) > 8 ? 'block' : 'none';
     }
 
     async handleSave() {
-        if (this.state.isLoading || !this.validate()) return;
+        if (this.state.isLoading || !this.validateForm()) return;
 
+        const formData = this.collectFormData();
+        
         try {
             this.setLoading(true);
-            const entryData = this.collectFormData();
-            await this.onSave(this.state.selectedDate, entryData);
+            await this.onSave(this.state.selectedDate, formData);
             this.state.hasUnsavedChanges = false;
             this.close();
         } catch (error) {
-            console.error("Error saving time entry:", error);
-            this.showError("Failed to save time entry. Please try again.");
+            console.error('Error saving time entry:', error);
+            this.showError('Failed to save time entry');
         } finally {
             this.setLoading(false);
         }
     }
 
-    validate() {
-        const isValid = this.validationRules.hours.validate(this.hoursInput.value);
-        if (!isValid) this.showError(this.validationRules.hours.message);
-        return isValid;
+    validateForm() {
+        const hours = parseFloat(this.elements.hoursInput.value);
+        if (!this.elements.timeOffCheck.checked && (isNaN(hours) || hours < 0 || hours > 24)) {
+            this.showError('Please enter valid hours (0-24)');
+            return false;
+        }
+        return true;
     }
 
     collectFormData() {
-        const isTimeOff = this.timeOffCheck.checked;
         return {
-            hours: isTimeOff ? 0 : Number(this.hoursInput.value),
-            isTimeOff,
-            managerApproved: this.managerApprovalCheck.checked,
-            overtimeApproved: this.overtimeApprovalCheck.checked,
-            shortDayApproved: this.shortDayApprovalCheck.checked,
-            timestamp: new Date().toISOString(),
+            isTimeOff: this.elements.timeOffCheck.checked,
+            hours: this.elements.timeOffCheck.checked ? 0 : parseFloat(this.elements.hoursInput.value),
+            managerApproved: this.elements.managerApprovedCheck.checked,
+            overtimeApproved: this.elements.overtimeApprovedCheck.checked,
+            notes: this.elements.notesInput.value.trim(),
+            timestamp: new Date().toISOString()
         };
     }
 
     setLoading(isLoading) {
         this.state.isLoading = isLoading;
-        this.loadingOverlay.style.display = isLoading ? "flex" : "none";
-        this.saveButton.disabled = isLoading;
+        this.elements.loadingOverlay.style.display = isLoading ? 'flex' : 'none';
+        this.elements.saveButton.disabled = isLoading;
     }
 
     showError(message) {
-        const errorEl = DOMUtils.createElement("div", {
-            className: "modal-error",
-            text: message,
-        });
-
-        const existingError = this.modal.querySelector(".modal-error");
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'modal-error';
+        errorDiv.textContent = message;
+        
+        const existingError = this.modal.querySelector('.modal-error');
         if (existingError) existingError.remove();
-
-        this.modal.appendChild(errorEl);
-        setTimeout(() => errorEl.remove(), 5000);
+        
+        this.modal.querySelector('.modal-body').prepend(errorDiv);
+        setTimeout(() => errorDiv.remove(), 5000);
     }
 
-    setInitialFocus() {
-        if (this.timeOffCheck.checked) {
-            this.managerApprovalCheck.focus();
-        } else {
-            this.hoursInput.focus();
-            this.hoursInput.select();
-        }
+    destroy() {
+        this.modal.remove();
     }
 }
