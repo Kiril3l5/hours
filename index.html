@@ -10,7 +10,7 @@ featured_image: /images/demo/home.jpg
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#ff6b35">
+    <meta name="theme-color" content="#ff8d00"> <!-- Updated to match your theme -->
     <title>Hours Portal - Autonomy Heroes</title>
   <script type="module" crossorigin src="/assets/index-CeHYubYZ.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-Df4S3Okj.css">
@@ -19,13 +19,16 @@ featured_image: /images/demo/home.jpg
     <div id="app">
         <!-- Loading Screen -->
         <div id="appLoading" class="app-loading">
-            <div class="spinner" role="status">
-                <span class="sr-only">Loading...</span>
+            <div class="loading-content">
+                <div class="spinner" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p>Loading...</p>
             </div>
         </div>
 
         <!-- Error Boundary -->
-        <div id="errorBoundary" class="error-boundary" aria-hidden="true">
+        <div id="errorBoundary" class="error-boundary" aria-hidden="true" style="display: none;">
             <div class="error-content">
                 <h2>Something went wrong</h2>
                 <p id="errorMessage"></p>
@@ -39,9 +42,9 @@ featured_image: /images/demo/home.jpg
                 <button id="loginTab" class="active">Login</button>
                 <button id="registerTab">Register</button>
             </div>
-            <form id="loginForm" class="auth-form active">
-                <input type="email" name="email" placeholder="Email" required>
-                <input type="password" name="password" placeholder="Password" required>
+            <form id="loginForm" class="auth-form active" role="form" aria-labelledby="loginTab">
+                <input type="email" name="email" placeholder="Email" required aria-label="Email">
+                <input type="password" name="password" placeholder="Password" required aria-label="Password">
                 <button type="submit" class="btn-primary">Login</button>
             </form>
             <form id="registerForm" class="auth-form">
@@ -63,9 +66,8 @@ featured_image: /images/demo/home.jpg
                 <p id="userEmail"></p>
                 <button id="logoutBtn" class="btn-secondary">Logout</button>
             </header>
-            <div id="calendar" class="calendar-grid"></div>
+            <div id="calendar"></div>  <!-- Removed calendar-grid class -->
         </div>
-    </div>
 
     <!-- Scripts -->
 	<!-- Service Worker Registration -->
