@@ -3206,7 +3206,7 @@ This typically indicates that your device does not have a healthy Internet conne
             <span class="hours">${d.hours}h</span>
             ${d.isTimeOff?`
                 <span class="badge time-off">
-                    ${d.timeOffType==="paid"?"PTO":"Unpaid"}
+                    ${d.timeOffType==="paid"?"PTO":"Unpaid Time Off"}
                     ${d.managerApproved?" ✓":" (Pending)"}
                 </span>
             `:""}
