@@ -1,34 +1,24 @@
----
-layout: default
-title: Hours panel
-description: Input hours 
-featured_image: /images/demo/home.jpg
----
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#ff8d00"> <!-- Updated to match your theme -->
+    <meta name="theme-color" content="#ff8d00">
     <title>Hours Portal - Autonomy Heroes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script type="module" crossorigin src="/assets/index-C3LZYSMv.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-B2sCbk3B.css">
 </head>
 <body>
     <div id="app">
-        <!-- Loading Screen -->
         <div id="appLoading" class="app-loading">
             <div class="loading-content">
-                <div class="spinner" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
+                <div class="spinner"></div>
                 <p>Loading...</p>
             </div>
         </div>
 
-        <!-- Error Boundary -->
-        <div id="errorBoundary" class="error-boundary" aria-hidden="true" style="display: none;">
+        <div id="errorBoundary" class="error-boundary" style="display: none;">
             <div class="error-content">
                 <h2>Something went wrong</h2>
                 <p id="errorMessage"></p>
@@ -38,13 +28,21 @@ featured_image: /images/demo/home.jpg
 
         <!-- Auth Section -->
         <div id="authContainer" class="auth-container active">
+            <section class="hero">
+                <div class="hero__overlay"></div>
+                <div class="hero__content">
+                    <h1>Hours Portal</h1>
+                    <p>Track and manage your time efficiently</p>
+                </div>
+            </section>
+            
             <div class="tabs">
                 <button id="loginTab" class="active">Login</button>
                 <button id="registerTab">Register</button>
             </div>
-            <form id="loginForm" class="auth-form active" role="form" aria-labelledby="loginTab">
-                <input type="email" name="email" placeholder="Email" required aria-label="Email">
-                <input type="password" name="password" placeholder="Password" required aria-label="Password">
+            <form id="loginForm" class="auth-form active">
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Password" required>
                 <button type="submit" class="btn-primary">Login</button>
             </form>
             <form id="registerForm" class="auth-form">
@@ -66,22 +64,24 @@ featured_image: /images/demo/home.jpg
                 <p id="userEmail"></p>
                 <button id="logoutBtn" class="btn-secondary">Logout</button>
             </header>
-            <div id="calendar"></div>  <!-- Removed calendar-grid class -->
+            <div id="calendar"></div>
         </div>
 
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <p>&copy; 2024 Autonomy Heroes. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
     <!-- Scripts -->
-	<!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker
-                    .register('/sw.js')
-                    .then((registration) => {
-                        console.log('Service Worker registered successfully:', registration.scope);
-                    })
-                    .catch((error) => {
-                        console.error('Service Worker registration failed:', error);
-                    });
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('ServiceWorker registered:', registration.scope))
+                    .catch(error => console.error('ServiceWorker error:', error));
             });
         }
     </script>
