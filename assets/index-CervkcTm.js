@@ -3215,7 +3215,7 @@ This typically indicates that your device does not have a healthy Internet conne
     </span>
 `:""}
 ${!d.isTimeOff&&d.hours>8?`<span class="badge overtime" 
-           data-tooltip="Regular Hours: 8h, Overtime: ${(d.hours-8).toFixed(1)}h">
+           data-tooltip="8h + ${(d.hours-8).toFixed(1)}h OT">
         OT
     </span>`:""}
         </div>
