@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#ff8d00">
     <title>Hours Portal - Autonomy Heroes</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/index-C5b3ZVrE.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-DVLUh9qe.css">
+  <script type="module" crossorigin src="/assets/index-CwqeiZcC.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CO5UcIWN.css">
 </head>
 <body>
     <div id="app">
@@ -66,6 +66,13 @@
 
         <!-- Calendar Container -->
         <div id="calendarContainer" class="calendar-container">
+            <div id="errorBoundary" class="error-boundary" style="display: none;">
+                <div class="error-content">
+                    <h3>Something went wrong</h3>
+                    <p class="error-message"></p>
+                    <button class="retry-button">Retry</button>
+                </div>
+            </div>
             <!-- User Controls -->
             <div class="user-controls">
                 <span id="userEmail"></span>
