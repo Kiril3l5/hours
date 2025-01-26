@@ -3172,19 +3172,15 @@ This typically indicates that your device does not have a healthy Internet conne
     <div class="calendar-header">
         <div class="month-navigation">
             <div class="nav-section">
+                <button class="nav-button prev-month" aria-label="Previous month">
+                    ←
+                </button>
                 <h2 class="current-month">${new Date().toLocaleString("default",{month:"long",year:"numeric"})}</h2>
-                <div class="nav-controls">
-                    <button class="nav-button prev-month" aria-label="Previous month">
-                        ←
-                    </button>
-                    <button class="nav-button next-month" aria-label="Next month">
-                        →
-                    </button>
-                </div>
+                <button class="nav-button next-month" aria-label="Next month">
+                    →
+                </button>
             </div>
-            <button class="today-button">
-                <span>Today</span>
-            </button>
+            <button class="today-button">Today</button>
         </div>
     </div>
     <div class="calendar-grid">
